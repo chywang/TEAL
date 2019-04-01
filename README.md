@@ -43,6 +43,9 @@ The main Python packages that we use in this project include but are not limited
 2. gensim: 2.0.0
 3. numpy: 1.15.4
 4. tensorflow: 1.12.0
+5. scikit-learn: 0.18.1
+
+The codes might run properly using the packages of other versions as well.
 
 **More Notes on the Algorithms**
 
