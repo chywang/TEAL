@@ -28,7 +28,7 @@ gensim_file = 'word_vectors_u_teal.txt'
 word_vectors = gensim.models.KeyedVectors.load_word2vec_format(gensim_file, binary=False)  # GloVe Model
 print('load model successfully')
 
-model = load_model('model.h5')
+model = load_model('proj_model.h5')
 
 # train basicnn
 emb_dim = 100

@@ -81,4 +81,4 @@ for i in range(5):
                   loss_weights=[0, 1])
     model.fit([neg_data], [neg_labels, neg_labels],
               epochs=50, batch_size=128)
-model.save('model.h5')
+model.save('proj_model.h5')
