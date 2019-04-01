@@ -873,7 +873,6 @@ artifact	bottle	0
 bottle	container	1
 container	bottle	0
 bottle	drinkware	1
-drinkware	bottle	0
 bottle	object	1
 object	bottle	0
 bottle	utensil	1
@@ -913,7 +912,6 @@ artifact	jar	0
 jar	container	1
 container	jar	0
 jar	drinkware	1
-drinkware	jar	0
 jar	kitchenware	1
 kitchenware	jar	0
 jar	object	1
@@ -931,7 +929,6 @@ container	mug	0
 mug	dishware	1
 dishware	mug	0
 mug	drinkware	1
-drinkware	mug	0
 mug	kitchenware	1
 kitchenware	mug	0
 mug	object	1

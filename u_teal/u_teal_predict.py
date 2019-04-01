@@ -6,7 +6,7 @@ from keras.models import load_model
 # load data
 pos_list = list()
 neg_list = list()
-file = open('bless_binary.txt')
+file = open('test.txt')
 while 1:
     line = file.readline()
     if not line:
@@ -28,7 +28,7 @@ gensim_file = 'word_vectors_u_teal.txt'
 word_vectors = gensim.models.KeyedVectors.load_word2vec_format(gensim_file, binary=False)  # GloVe Model
 print('load model successfully')
 
-model = load_model('model_bless.h5')
+model = load_model('model.h5')
 
 # train basicnn
 emb_dim = 100
