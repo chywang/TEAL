@@ -17,15 +17,35 @@ Inputs
 
 > NOTE: Due to the large size of neural language models, we only upload the embedding vectors of words that are required to the test set. Please use your own neural language model instead, if you would like to try the algorithm over your datasets.
 
-2. probase_pos.txt and probase_negative.txt: Positive and negative sampled generated from the Microsoft Concept Graph. The format of the file s is "word1 \t word2 \t label".
+2. probase_pos.txt and probase_negative.txt: Positive and negative sampled generated from the Microsoft Concept Graph. The format of the file is "word1 \t word2" pairs.
 
-3. test.txt: The path of the testing set. The format of the testing set is the same as those of "probase_pos.txt" and "probase_negative.txt".
+3. test.txt: The path of the testing set. The format of the testing set is "word1 \t word2 \t label" triples.
 
 Codes
 
 1. u_teal_train.py: The script for training the projection neural network of U-TEAL.
 
 2. u_teal_predict.py: The script for making predictions over the test set by U-TEAL.
+
+> The formats of inputs and codes of S-TEAL and AS-TEAL algorithms are generally the same as those of U-TEAL. Hence, we do not elaborate in the following.
+
++ S-TEAL: Supervised hypernymy classifier, in the s-teal package
+
+Inputs
+
+1. word_vectors_s_teal.txt: The embeddings of all words. 
+
+2. train.txt: The path of the training set.
+
+3. test.txt: The path of the testing set. 
+
+Codes
+
+1. s_teal_proj_train.py: The script for training the projection neural network of S-TEAL.
+
+2. s_teal_cls_train.py:  The script for training the SVM based hypernymy relation classifier of S-TEAL.
+
+3. s_teal_cls_predict.py: The script for making predictions over the test set by S-TEAL.
 
 **Dependencies**
 
