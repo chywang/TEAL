@@ -2,38 +2,30 @@
 
 ### By Chengyu Wang (https://chywang.github.io)
 
-**Introducion:** This software is the implementation of the Taxonomy Enhanced Adversarial Learning (TEAL) framework for hypernymy prediction. It includes three algorithms: i) the unsupervised measure U-TEAL for unsupervised hypernymy classification, ii) the supervised model S-TEAL for supervised hypernymy detection and iii) the adversarial supervised model AS-TEAL for supervised hypernymy detection with background taxonomies for distinct supervision.
+**Introduction:** This software is the implementation of the Taxonomy Enhanced Adversarial Learning (TEAL) framework for hypernymy prediction. It includes three algorithms: i) the unsupervised measure U-TEAL for unsupervised hypernymy classification, ii) the supervised model S-TEAL for supervised hypernymy detection and iii) the adversarial supervised model AS-TEAL for supervised hypernymy detection with background taxonomies for distinct supervision.
 
 **Paper:** Wang et al. Improving Hypernymy Prediction via Taxonomy Enhanced Adversarial Learning. AAAI 2019
 
 
 **Frameworks**
 
-+ TransductLeaner: The main software entry-point, with five input arguments required.
++ U-TEAL: Unsupervised hypernymy measure, in the u-teal package
 
-1. w2vPath: The embeddings of all Chinese words in either the training set or the testing set. The start of each line of the file is the Chinese word, followed by the embedding vectors. All the values in a line are separated by a blank (' '). In practice, the embeddings can be learned by all deep neural language models.
+Inputs
 
-> NOTE: Due to the large size of neural language models, we only upload the embedding vectors of words in the training and testing sets. Please use your own neural language model instead, if you would like to try the algorithm over your datasets.
+1. word_vectors_u_teal.txt: The embeddings of all words. The start of the first line is the number of words and the dimensionality of word embeddings. After that, each line contains the words and its embeddings. All the values in a line are separated by a blank (' '). In practice, the embeddings can be learned by all deep neural language models.
 
-2. trainPath: The path of the training set in the format of "word1 \t word2 \t label" triples. As for the label, 1 is for the hypernymy relation and 0 is for the non-hypernymy relation.
+> NOTE: Due to the large size of neural language models, we only upload the embedding vectors of words that are required to the test set. Please use your own neural language model instead, if you would like to try the algorithm over your datasets.
 
-3. testPath: The path of the testing set. The format of the testing set is the same as that of the training set.
+2. probase_pos.txt and probase_negative.txt: Positive and negative sampled generated from the Microsoft Concept Graph. The format of the file s is "word1 \t word2 \t label".
 
-4. outputPath: The path of the output file, containing the model prediction scores of all the pairs in the testing set. The output of each pair is a real value in (-1,1). (Please refer to the paper for detailed explanation.)
+3. test.txt: The path of the testing set. The format of the testing set is the same as those of "probase_pos.txt" and "probase_negative.txt".
 
-5. dimension: The dimensionality of the embedding vectors.
+Codes
 
-> NOTE: The default values can be set as: "word_vectors.txt", "train.txt", "test.txt", "output.txt" and "50".
+1. u_teal_train.py: The script for training the projection neural network of U-TEAL.
 
-+ Eval: A simple evaluation script,  with three input arguments required. It outputs Precision, Recall and F1-score  as the evaluation scores. 
-
-1. truthPath: The path of the testing set, with human-labeled results.
-
-2. predictPath: The path of the model output file,.
-
-3. thres: A threshold in (-1,1) for the model to assign relation labels to Chinese word pairs. (Please refer to the parameter 'θ' in the paper.)
-
-> NOTE: The default values can be set as: "test.txt", "output.txt" and "0.1".
+2. u_teal_predict.py: The script for making predictions over the test set by U-TEAL.
 
 **Dependencies**
 
@@ -45,11 +37,11 @@ The main Python packages that we use in this project include but are not limited
 4. tensorflow: 1.12.0
 5. scikit-learn: 0.18.1
 
-The codes might run properly using the packages of other versions as well.
+The codes can run properly under the packages of other versions as well.
 
 **More Notes on the Algorithms**
 
-This software is the implementation of our AAAI 2019 paper. The codes have been slightly modified to make them for research to re-use. Due to size limitation, we only provide part of the data related to our paper. However, it should be noted that all the data and resources are publicly available. Please refer to the links and references for details.
+This software is the implementation of the AAAI 2019 paper. The codes have been slightly modified to make them easier for NLP researcher to re-use. Due to size limitation, we only provide part of the data related to our paper. However, it should be noted that all the data and resources are publicly available. Please refer to the links and references for details.
 
 
 **Citation**
