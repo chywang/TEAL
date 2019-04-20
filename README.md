@@ -15,7 +15,7 @@ Inputs
 
 1. word_vectors_u_teal.txt: The embeddings of all words. The start of the first line is the number of words and the dimensionality of word embeddings. After that, each line contains the words and its embeddings. All the values in a line are separated by a blank (' '). In practice, the embeddings can be learned by all deep neural language models.
 
-> NOTE: Due to the large size of neural language models, we only upload the embedding vectors of words that are required to the test set. Please use your own neural language model instead, if you would like to try the algorithm over your datasets.
+> NOTE: Due to the large size of neural language models, we only upload the embedding vectors of words in the test set. Please use your own neural language model instead, if you would like to try the algorithm over your datasets.
 
 2. probase_pos.txt and probase_negative.txt: Positive and negative sampled generated from the Microsoft Concept Graph. The format of the file is "word1 \t word2" pairs.
 
