@@ -29,6 +29,8 @@ Codes
 
 > The formats of inputs and codes of S-TEAL and AS-TEAL algorithms are generally the same as those of U-TEAL. Hence, we do not elaborate in the following parts.
 
+---
+
 + S-TEAL: Supervised hypernymy classifier, in the s_teal package
 
 Inputs
@@ -46,6 +48,8 @@ Codes
 2. s_teal_cls_train.py:  The script for training the SVM based hypernymy relation classifier of S-TEAL.
 
 3. s_teal_cls_predict.py: The script for making predictions over the test set by S-TEAL.
+
+---
 
 + AS-TEAL: Adversarial supervised hypernymy classifier, in the as_teal package
 
