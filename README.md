@@ -9,7 +9,7 @@
 
 **Frameworks**
 
-+ U-TEAL: Unsupervised hypernymy measure, in the u-teal package
++ U-TEAL: Unsupervised hypernymy measure, in the u_teal package
 
 Inputs
 
@@ -27,9 +27,9 @@ Codes
 
 2. u_teal_predict.py: The script for making predictions over the test set by U-TEAL.
 
-> The formats of inputs and codes of S-TEAL and AS-TEAL algorithms are generally the same as those of U-TEAL. Hence, we do not elaborate in the following.
+> The formats of inputs and codes of S-TEAL and AS-TEAL algorithms are generally the same as those of U-TEAL. Hence, we do not elaborate in the following parts.
 
-+ S-TEAL: Supervised hypernymy classifier, in the s-teal package
++ S-TEAL: Supervised hypernymy classifier, in the s_teal package
 
 Inputs
 
@@ -46,6 +46,32 @@ Codes
 2. s_teal_cls_train.py:  The script for training the SVM based hypernymy relation classifier of S-TEAL.
 
 3. s_teal_cls_predict.py: The script for making predictions over the test set by S-TEAL.
+
++ AS-TEAL: Adversarial supervised hypernymy classifier, in the as_teal package
+
+Inputs
+
+1. word_vectors_as_teal.txt: The embeddings of all words. 
+
+2. train.txt: The path of the training set.
+
+3. test.txt: The path of the testing set. 
+
+4. as_probase_pos.txt: The path of the taxonomy enhanced positive training set.
+
+5. as_probase_neg.txt: The path of the taxonomy enhanced negative training set.
+
+Codes
+
+1. semantic_filter.py: The script for extracted semantically related positive and negative training instances (i.e., word pairs) from the Microsoft Concept Graph.
+
+> NOTE: Due to the large size of the Microsoft Concept Graph, we do not upload the original relations here. The project can be found here: https://concept.research.microsoft.com.
+
+2. as_teal_proj_train.py: The script fro training the projection neural network of AS-TEAL.
+
+2. as_teal_cls_train.py:  The script for training the SVM based hypernymy relation classifier of AS-TEAL.
+
+3. as_teal_cls_predict.py: The script for making predictions over the test set by AS-TEAL.
 
 **Dependencies**
 
