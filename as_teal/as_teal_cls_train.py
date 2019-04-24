@@ -57,7 +57,7 @@ for i in range(len(neg_list)):
     negative_count = negative_count + 1
 
 model = load_model('proj_model.h5')
-[pre_pos, pre_neg, _, _, _, _] = model.predict_on_batch(x=[pos_data, pos_data])
+[pre_pos, pre_neg] = model.predict_on_batch(x=[pos_data])
 
 #[pre_pos, pre_neg] = model.predict_on_batch(x=[pos_data])
 pos_svm_data = np.column_stack(
@@ -65,7 +65,7 @@ pos_svm_data = np.column_stack(
 pos_svm_label = np.ones((positive_count, 1))
 
 #[pre_pos, pre_neg] = model.predict_on_batch(x=[neg_data])
-[pre_pos, pre_neg, _, _, _, _] = model.predict_on_batch(x=[neg_data, neg_data])
+[pre_pos, pre_neg] = model.predict_on_batch(x=[neg_data])
 neg_svm_data = np.column_stack(
     (neg_data, neg_labels, neg_data - neg_labels, pre_pos - neg_labels, pre_neg - neg_labels))
 neg_svm_label = np.zeros((negative_count, 1))

@@ -44,7 +44,6 @@ def load_probase_training_set(path):
 def create_vector_output(data_list):
     data_vectors = np.zeros((len(data_list), emb_dim))
     label_vectors = np.zeros((len(data_list), emb_dim))
-    count = 0
     for i in range(len(data_list)):
         (hypo, hyper) = data_list[i]
         data_vectors[i] = word_vectors[hypo]
@@ -52,27 +51,39 @@ def create_vector_output(data_list):
     return data_vectors,label_vectors
 
 
-def define_proj_network():
-    global emb_dim
+def define_supervised_proj_network():
     supervised_input = Input(shape=(emb_dim,), name='supervised_input')
     supervised_hidden = Dense(emb_dim, activation='tanh', name='supervised_hidden')(supervised_input)
     pos_supervised_output = Dense(emb_dim, activation='linear', name='pos_supervised_output')(supervised_hidden)
     neg_supervised_output = Dense(emb_dim, activation='linear', name='neg_supervised_output')(supervised_hidden)
+    model = Model(inputs=[supervised_input], outputs=[pos_supervised_output, neg_supervised_output])
+    return model
 
+
+def define_probase_proj_network():
     probase_input = Input(shape=(emb_dim,), name='probase_input')
     probase_hidden = Dense(emb_dim, activation='tanh', name='probase_hidden')(probase_input)
+    pos_supervised_output = Dense(emb_dim, activation='linear', name='pos_probase_output')(probase_hidden)
+    neg_supervised_output = Dense(emb_dim, activation='linear', name='neg_probase_output')(probase_hidden)
+    model = Model(inputs=[probase_input], outputs=[pos_supervised_output, neg_supervised_output])
+    return model
 
-    concat1 = Concatenate()([probase_hidden, supervised_hidden])
-    pos_probase_output = Dense(emb_dim, activation='linear', name='pos_probase_output')(concat1)
-    neg_probase_output = Dense(emb_dim, activation='linear', name='neg_probase_output')(concat1)
 
-    concat2 = Concatenate()([pos_supervised_output, pos_probase_output])
-    pos_classifier=Dense(1, activation='softmax', name='pos_classifier')(concat2)
+def define_positive_adverse_classifier():
+    input = Input(shape=(emb_dim,), name='input')
+    model_positive_output = Input(shape=(emb_dim,), name='model_positive_output')
+    concat = Concatenate()([input, model_positive_output])
+    pos_classifier = Dense(1, activation='softmax', name='pos_classifier')(concat)
+    model = Model(inputs=[input, model_positive_output], outputs=[pos_classifier])
+    return model
 
-    concat3 = Concatenate()([neg_supervised_output, neg_probase_output])
-    neg_classifier=Dense(1, activation='softmax', name='neg_classifier')(concat3)
 
-    model = Model(inputs=[supervised_input, probase_input], outputs=[pos_supervised_output, neg_supervised_output, pos_probase_output, neg_probase_output, pos_classifier, neg_classifier])
+def define_negative_adverse_classifier():
+    input = Input(shape=(emb_dim,), name='input')
+    model_negative_output = Input(shape=(emb_dim,), name='model_negative_output')
+    concat = Concatenate()([input, model_negative_output])
+    neg_classifier = Dense(1, activation='softmax', name='pos_classifier')(concat)
+    model = Model(inputs=[input, model_negative_output], outputs=[neg_classifier])
     return model
 
 
@@ -80,44 +91,40 @@ def train_supervised_proj_network(model, pos_data, pos_labels, neg_data, neg_lab
     #one pass training of the supervised projection sub-network
     for i in range(2):
         model.compile(optimizer='adam', loss='mse',
-                      loss_weights=[1, 0, 0, 0, 0, 0])
-        model.fit([pos_data, pos_data], [pos_labels, pos_labels, pos_labels, pos_labels, np.zeros(shape=(len(pos_data),1)), np.zeros(shape=(len(pos_data),1))],
+                      loss_weights=[1, 0])
+        model.fit([pos_data], [pos_labels, pos_labels],
                   epochs=20, batch_size=128)
         model.compile(optimizer='adam', loss='mse',
-                      loss_weights=[0, 1, 0, 0, 0, 0])
-        model.fit([neg_data, neg_data], [neg_labels, neg_labels, neg_labels, neg_labels, np.zeros(shape=(len(neg_data),1)), np.zeros(shape=(len(neg_data),1))],
+                      loss_weights=[0, 1])
+        model.fit([neg_data], [neg_labels, neg_labels],
                   epochs=20, batch_size=128)
 
 
 def train_probase_proj_network(model, pos_data, pos_labels, neg_data, neg_labels):
-    # one pass training of the supervised projection sub-network
+    # one pass training of the probase projection sub-network
     for i in range(2):
         model.compile(optimizer='adam', loss='mse',
-                        loss_weights=[0, 0, 1, 0, 0, 0])
-        model.fit([pos_data, pos_data],
-                    [pos_labels, pos_labels, pos_labels, pos_labels, np.zeros(shape=(len(pos_data), 1)),
-                    np.zeros(shape=(len(pos_data), 1))],
+                        loss_weights=[1, 0])
+        model.fit([pos_data], [pos_labels, pos_labels],
                     epochs=20, batch_size=128)
         model.compile(optimizer='adam', loss='mse',
-                        loss_weights=[0, 0, 0, 1, 0, 0])
-        model.fit([neg_data, neg_data],
-                    [neg_labels, neg_labels, neg_labels, neg_labels, np.zeros(shape=(len(neg_data), 1)),
-                    np.zeros(shape=(len(neg_data), 1))],
+                        loss_weights=[0, 1])
+        model.fit([neg_data], [neg_labels, neg_labels],
                     epochs=20, batch_size=128)
 
 
-def train_adverse_network(model, pos_data, neg_data):
+def train_positive_adverse_network(model, input_data, supervised_positive_output, probase_positive_output):
     for i in range(2):
-        model.compile(optimizer='adam', loss='binary_crossentropy', loss_weights=[0, 0, 0, 0, 0.1, 0])
-        model.fit([pos_data, pos_data],[np.zeros(shape=(len(pos_data), emb_dim)), np.zeros(shape=(len(pos_data), emb_dim)),
-                                    np.zeros(shape=(len(pos_data), emb_dim)), np.zeros(shape=(len(pos_data), emb_dim)),
-                                    np.random.randint(2, size=len(pos_data)),
-                                    np.zeros(shape=(len(pos_data), 1))],epochs=10, batch_size=128)
-        model.compile(optimizer='adam', loss='binary_crossentropy', loss_weights=[0, 0, 0, 0, 0, 0.1])
-        model.fit([neg_data, neg_data], [np.zeros(shape=(len(neg_data), emb_dim)), np.zeros(shape=(len(neg_data), emb_dim)),
-                                     np.zeros(shape=(len(neg_data), emb_dim)), np.zeros(shape=(len(neg_data), emb_dim)),
-                                     np.zeros(shape=(len(neg_data), 1)),
-                                     np.random.randint(2, size=len(neg_data))], epochs=10, batch_size=128)
+        model.compile(optimizer='adam', loss='binary_crossentropy')
+        model.fit([input_data, supervised_positive_output],[np.ones(shape=(len(input_data), 1))],epochs=10, batch_size=128)
+        model.fit([input_data, probase_positive_output],[np.zeros(shape=(len(input_data), 1))],epochs=10, batch_size=128)
+
+
+def train_negative_adverse_network(model, input_data, supervised_negative_output, probase_negative_output):
+    for i in range(2):
+        model.compile(optimizer='adam', loss='binary_crossentropy')
+        model.fit([input_data, supervised_negative_output], [np.ones(shape=(len(input_data), 1))], epochs=10, batch_size=128)
+        model.fit([input_data, probase_negative_output], [np.zeros(shape=(len(input_data), 1))], epochs=10, batch_size=128)
 
 
 # load glove
@@ -136,19 +143,30 @@ neg_probase_list=load_probase_training_set('as_probase_neg.txt')
 pos_probase_data_vectors, pos_probase_label_vectors=create_vector_output(pos_train_list)
 neg_probase_data_vectors, neg_probase_label_vectors=create_vector_output(neg_train_list)
 
-proj_model=define_proj_network()
+supervised_proj_network=define_supervised_proj_network()
+probase_proj_network=define_probase_proj_network()
+positive_adverse_classifier=define_positive_adverse_classifier()
+negative_adverse_classifier=define_negative_adverse_classifier()
 
 #initialized training
-train_supervised_proj_network(proj_model, pos_train_data_vectors, pos_train_label_vectors, neg_train_data_vectors, neg_train_label_vectors)
-train_probase_proj_network(proj_model, pos_probase_data_vectors, pos_probase_label_vectors, neg_probase_data_vectors, neg_probase_label_vectors)
+train_supervised_proj_network(supervised_proj_network, pos_train_data_vectors, pos_train_label_vectors, neg_train_data_vectors, neg_train_label_vectors)
+train_probase_proj_network(probase_proj_network, pos_probase_data_vectors, pos_probase_label_vectors, neg_probase_data_vectors, neg_probase_label_vectors)
 
 #iterative training
 iter=5 #number of iterations
 for i in range(0,iter):
-    train_adverse_network(proj_model, pos_train_data_vectors, neg_train_data_vectors)
-    train_supervised_proj_network(proj_model, pos_train_data_vectors, pos_train_label_vectors, neg_train_data_vectors,
-                                  neg_train_label_vectors)
-    train_probase_proj_network(proj_model, pos_probase_data_vectors, pos_probase_label_vectors,
+    # for positive data
+    [pos_train_label_vectors_predict1, _]=supervised_proj_network.predict(pos_train_data_vectors)
+    [pos_train_label_vectors_predict2, _]=probase_proj_network.predict(pos_train_data_vectors)
+    train_positive_adverse_network(positive_adverse_classifier, pos_train_data_vectors, pos_train_label_vectors_predict1, pos_train_label_vectors_predict2)
+
+    [_, neg_train_label_vectors_predict1] = supervised_proj_network.predict(neg_train_data_vectors)
+    [_, neg_train_label_vectors_predict2] = probase_proj_network.predict(neg_train_data_vectors)
+    train_negative_adverse_network(negative_adverse_classifier, neg_train_data_vectors, neg_train_label_vectors_predict1, neg_train_label_vectors_predict2)
+
+    train_supervised_proj_network(supervised_proj_network, pos_train_data_vectors, pos_train_label_vectors,
+                                  neg_train_data_vectors, neg_train_label_vectors)
+    train_probase_proj_network(probase_proj_network, pos_probase_data_vectors, pos_probase_label_vectors,
                                neg_probase_data_vectors, neg_probase_label_vectors)
 
-proj_model.save('proj_model.h5')
+supervised_proj_network.save('proj_model.h5')
