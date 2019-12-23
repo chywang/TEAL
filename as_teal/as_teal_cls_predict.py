@@ -1,6 +1,6 @@
 import numpy as np
 import gensim
-from keras.models import load_model
+import tensorflow as tf
 from sklearn.externals import joblib
 
 # load data
@@ -55,16 +55,58 @@ for i in range(len(neg_list)):
     neg_labels[negative_count] = word_vectors[hyper]
     negative_count = negative_count + 1
 
-model = load_model('proj_model.h5')
+base_entity_embed_pos = tf.placeholder(tf.float32, shape=[None, emb_dim], name='base_entity_embed_pos')
+base_entity_embed_neg = tf.placeholder(tf.float32, shape=[None, emb_dim], name='base_entity_embed_neg')
+
+def xavier_init(size):
+    in_dim = size[0]
+    xavier_stddev = 1. / tf.sqrt(in_dim / 2.)
+    return tf.random_normal(shape=size, stddev=xavier_stddev)
+
+
+# define base network parameters
+base_W_share = tf.Variable(xavier_init([emb_dim, emb_dim]), name='base_W_share')
+base_B_share = tf.Variable(tf.zeros([emb_dim]), name='base_B_share')
+base_W_hyper = tf.Variable(xavier_init([emb_dim, emb_dim]), name='base_W_hyper')
+base_B_hyper = tf.Variable(tf.zeros([emb_dim]), name='base_B_hyper')
+base_W_non = tf.Variable(xavier_init([emb_dim, emb_dim]), name='base_W_non')
+base_B_non = tf.Variable(tf.zeros([emb_dim]), name='base_B_non')
+theta_base = [base_W_share, base_B_share, base_W_hyper, base_B_hyper, base_W_non, base_B_non]
+
+
+def base_positive_projection(base_entity_embed_pos):
+    base_H_share = tf.nn.relu(tf.matmul(base_entity_embed_pos, base_W_share) + base_B_share)
+    base_O_hyper = tf.matmul(base_H_share, base_W_hyper) + base_B_hyper
+    return base_O_hyper
+
+
+# define base negative network structure
+def base_negative_projection(base_entity_embed_neg):
+    base_H_share = tf.nn.relu(tf.matmul(base_entity_embed_neg, base_W_share) + base_B_share)
+    base_O_non = tf.matmul(base_H_share, base_W_hyper) + base_B_hyper
+    return base_O_non
+
+
+base_out_hyper = base_positive_projection(base_entity_embed_pos)
+base_out_non = base_negative_projection(base_entity_embed_neg)
+
+saver = tf.train.Saver()
+sess = tf.Session()
+saver.restore(sess, "model/as-teal")
+pre_pos = sess.run(base_out_hyper, feed_dict={base_entity_embed_pos: pos_data})
+pre_neg = sess.run(base_out_non, feed_dict={base_entity_embed_neg: pos_data})
+
 #[pre_pos, pre_neg] = model.predict_on_batch(x=[pos_data])
-[pre_pos, pre_neg] = model.predict_on_batch(x=[pos_data])
+#[pre_pos, pre_neg] = model.predict_on_batch(x=[pos_data])
 
 pos_svm_data = np.column_stack(
     (pos_data, pos_labels, pos_data - pos_labels, pre_pos - pos_labels, pre_neg - pos_labels))
 pos_svm_label = np.ones((positive_count, 1))
 
 #[pre_pos, pre_neg] = model.predict_on_batch(x=[neg_data])
-[pre_pos, pre_neg] = model.predict_on_batch(x=[neg_data])
+pre_pos = sess.run(base_out_hyper, feed_dict={base_entity_embed_pos: neg_data})
+pre_neg = sess.run(base_out_non, feed_dict={base_entity_embed_neg: neg_data})
+
 neg_svm_data = np.column_stack(
     (neg_data, neg_labels, neg_data - neg_labels, pre_pos - neg_labels, pre_neg - neg_labels))
 neg_svm_label = np.zeros((negative_count, 1))
